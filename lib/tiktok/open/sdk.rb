@@ -2,7 +2,9 @@
 
 require_relative 'sdk/string_utils'
 
+require_relative 'sdk/open_api/auth/helpers'
 require_relative 'sdk/open_api/auth/user'
+require_relative 'sdk/open_api/auth/client'
 require_relative 'sdk/version'
 require_relative 'sdk/http_client'
 require_relative 'sdk/config'
@@ -56,6 +58,16 @@ module Tiktok
         #   Tiktok::Open::Sdk.user_auth.authorization_uri
         def user_auth
           OpenApi::Auth::User
+        end
+
+        # Convenience accessor for client authentication functionality
+        #
+        # @return [OpenApi::Auth::Client] the Client authentication module
+        #
+        # @example
+        #   Tiktok::Open::Sdk.client_auth.fetch_client_token
+        def client_auth
+          OpenApi::Auth::Client
         end
       end
     end

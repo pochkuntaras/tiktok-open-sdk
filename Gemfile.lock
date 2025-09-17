@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    tiktok-open-sdk (0.1.0)
+    tiktok-open-sdk (0.2.0)
 
 GEM
   remote: https://rubygems.org/
@@ -108,6 +108,8 @@ GEM
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
+    webrick (1.9.1)
+    yard (0.9.37)
 
 PLATFORMS
   arm64-darwin-24
@@ -126,6 +128,8 @@ DEPENDENCIES
   simplecov (~> 0.22.0)
   tiktok-open-sdk!
   webmock (~> 3.19)
+  webrick (~> 1.8)
+  yard (~> 0.9)
 
 BUNDLED WITH
    2.6.9

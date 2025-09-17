@@ -23,6 +23,9 @@ Style/StringLiteralsInInterpolation:
 RSpec/MultipleMemoizedHelpers:
   Enabled: false
 
+Style/ModuleFunction:
+  Enabled: false
+
 RSpec/NestedGroups:
   Max: 4
 
@@ -31,6 +34,3 @@ RSpec/MultipleExpectations:
 
 RSpec/ExampleLength:
   Max: 12
-
-Gemspec/DevelopmentDependencies:
-  Enabled: false

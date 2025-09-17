@@ -16,4 +16,6 @@ group :development do
   gem 'rubocop-rspec', '~> 3.6'
   gem 'simplecov', '~> 0.22.0'
   gem 'webmock', '~> 3.19'
+  gem 'webrick', '~> 1.8'
+  gem 'yard', '~> 0.9'
 end

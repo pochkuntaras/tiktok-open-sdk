@@ -1,7 +1,7 @@
 # TikTok Open SDK
 
-[![Gem Version](https://badge.fury.io/rb/tiktok-open-sdk.svg)](https://badge.fury.io/rb/tiktok-open-sdk)
-[![Ruby Version](https://img.shields.io/badge/ruby-%3E%3D%202.7.0-red.svg)](https://www.ruby-lang.org/en/downloads/)
+[![Gem Version](https://img.shields.io/badge/gem-v0.2.0-blue.svg)](https://rubygems.org/gems/tiktok-open-sdk)
+[![Ruby Version](https://img.shields.io/badge/ruby-%3E%3D%203.0.0-red.svg)](https://www.ruby-lang.org/en/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE.txt)
 [![CI](https://github.com/pochkuntaras/tiktok-open-sdk/actions/workflows/main.yml/badge.svg)](https://github.com/pochkuntaras/tiktok-open-sdk/actions/workflows/main.yml)
 
@@ -10,6 +10,7 @@ A comprehensive Ruby SDK for integrating with TikTok Open API. This gem provides
 ## Features
 
 - **OAuth 2.0 Authentication** – Seamless OAuth flow for secure integration
+- **Client Authentication** – Server-to-server authentication with client credentials
 - **Token Management** – Easy access token exchange and refresh
 - **HTTP Client** – Built-in client for interacting with TikTok APIs
 
@@ -96,9 +97,9 @@ code = params[:code] # From your web framework (Rails, Sinatra, etc.)
 response = Tiktok::Open::Sdk.user_auth.fetch_access_token(code: code)
 
 if response[:success]
-  access_token  = response[:response]['access_token']
-  refresh_token = response[:response]['refresh_token']
-  expires_in    = response[:response]['expires_in']
+  access_token  = response[:response][:access_token]
+  refresh_token = response[:response][:refresh_token]
+  expires_in    = response[:response][:expires_in]
   
   puts "Access Token: #{access_token}"
   puts "Refresh Token: #{refresh_token}"
@@ -117,7 +118,7 @@ response = Tiktok::Open::Sdk.user_auth.refresh_access_token(
 )
 
 if response[:success]
-  new_access_token = response[:response]['access_token']
+  new_access_token = response[:response][:access_token]
 
   puts "New Access Token: #{new_access_token}"
 end
@@ -133,6 +134,27 @@ response = Tiktok::Open::Sdk.user_auth.revoke_access_token(
 
 puts "Token revoked successfully" if response[:success]
 ```
+
+### Client Authentication
+
+For server-to-server authentication, you can obtain a client access token:
+
+```ruby
+# Fetch client access token
+response = Tiktok::Open::Sdk.client_auth.fetch_client_token
+
+if response[:success]
+  client_token = response[:response][:access_token]
+  expires_in   = response[:response][:expires_in]
+  
+  puts "Client Token: #{client_token}"
+  puts "Expires in: #{expires_in} seconds"
+else
+  puts "Error: #{response[:response]}"
+end
+```
+
+**Note:** Client tokens are used for server-to-server authentication and have different scopes and permissions than user tokens.
 
 ### Using the HTTP Client
 
@@ -159,8 +181,7 @@ response = Tiktok::Open::Sdk::HttpClient.post(
     'Content-Type'  => 'application/json'
   },
   body: {
-    max_count: 10,
-    cursor: 0
+    # ...
   }
 )
 
@@ -217,8 +238,8 @@ class TiktokAuthController < ApplicationController
       token_data = response[:response]
       
       # Store tokens securely (consider using encrypted attributes)
-      session[:tiktok_access_token]  = token_data['access_token']
-      session[:tiktok_refresh_token] = token_data['refresh_token']
+      session[:tiktok_access_token]  = token_data[:access_token]
+      session[:tiktok_refresh_token] = token_data[:refresh_token]
       
       redirect_to dashboard_path, notice: 'Successfully connected to TikTok!'
     else
@@ -298,6 +319,27 @@ Revokes a refresh token.
 - `token` (String, required) - Refresh token to revoke
 
 **Returns:** Hash with `:success`, `:code`, and `:response` keys
+
+### Client Authentication
+
+#### `fetch_client_token`
+
+Obtains a client access token for server-to-server authentication.
+
+**Returns:** Hash with `:success`, `:code`, and `:response` keys
+
+**Example Response:**
+```ruby
+{
+  success:  true,
+  code:     200,
+  response: {
+    access_token: "client_token_here",
+    expires_in:   7200,
+    token_type:   "Bearer"
+  }
+}
+```
 
 ### HTTP Client
 
