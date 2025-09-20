@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
-require_relative 'sdk/string_utils'
-
-require_relative 'sdk/open_api/auth/helpers'
+require_relative 'sdk/helpers/string_utils_helper'
+require_relative 'sdk/helpers/response_helper'
+require_relative 'sdk/helpers/auth_helper'
+require_relative 'sdk/helpers/validators/token_validator'
 require_relative 'sdk/open_api/auth/user'
 require_relative 'sdk/open_api/auth/client'
+require_relative 'sdk/open_api/user'
 require_relative 'sdk/version'
 require_relative 'sdk/http_client'
 require_relative 'sdk/config'
@@ -18,6 +20,8 @@ module Tiktok
       # @example
       #   raise Tiktok::Open::Sdk::Error, "Something went wrong"
       class Error < StandardError; end
+
+      class RequestValidationError < Error; end
 
       class << self
         # SDK configuration object

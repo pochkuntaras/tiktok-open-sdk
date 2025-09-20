@@ -13,7 +13,6 @@ RSpec.describe Tiktok::Open::Sdk::HttpClient do
 
   describe 'class interface and module inclusion' do
     it { expect(described_class).to respond_to(:request) }
-    it { expect(described_class.ancestors).to include(Tiktok::Open::Sdk::StringUtils) }
     it { expect(described_class::SUPPORTED_METHODS).to eq(%i[get post]) }
   end
 
@@ -182,6 +181,48 @@ RSpec.describe Tiktok::Open::Sdk::HttpClient do
         expect(http_instance).to have_received(:open_timeout=).with(5)
         expect(http_instance).to have_received(:request).with(kind_of(Net::HTTP::Post))
       end
+    end
+  end
+
+  describe '.get' do
+    subject(:result) { described_class.get(test_url, params: params, headers: headers) }
+
+    let(:params)  { {} }
+    let(:headers) { {} }
+
+    let(:request_params) { [:get, test_url, { params: params, headers: headers }] }
+
+    before do
+      allow(Net::HTTP).to receive(:new).and_return(instance_double(Net::HTTP, request: http_response))
+
+      allow(described_class).to receive(:request).with(*request_params).and_return(http_response)
+    end
+
+    it { expect(result).to eq(http_response) }
+
+    context 'when delegating to .request with GET method' do
+      before { result }
+
+      it { expect(described_class).to have_received(:request).with(*request_params) }
+    end
+
+    context 'when all parameters are provided' do
+      let(:params)  { { query: 'param', filter: 'active' } }
+      let(:headers) { { 'Authorization' => 'Bearer token', 'User-Agent' => 'TikTok-SDK' } }
+
+      before { result }
+
+      it { expect(described_class).to have_received(:request).with(*request_params) }
+    end
+
+    context 'when only URL is provided' do
+      subject(:result) { described_class.get(test_url) }
+
+      let(:request_params) { [:get, test_url, { params: {}, headers: {} }] }
+
+      before { result }
+
+      it { expect(described_class).to have_received(:request).with(*request_params) }
     end
   end
 

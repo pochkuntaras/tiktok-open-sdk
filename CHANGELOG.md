@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-09-20
+### Added
+- User information retrieval from TikTok API
+- Improved request validation and error handling
+
 ## [0.2.0] - 2025-09-17
 ### Added
 - Support for obtaining a client access token directly from the TikTok Open API, enabling secure server-to-server authentication for backend integrations and service authentication flows.

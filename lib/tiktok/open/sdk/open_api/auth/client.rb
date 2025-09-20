@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'uri'
-
 module Tiktok
   module Open
     module Sdk
@@ -11,7 +9,8 @@ module Tiktok
           module Client
             extend self
 
-            include Helpers
+            include ::Tiktok::Open::Sdk::Helpers::AuthHelper
+            include ::Tiktok::Open::Sdk::Helpers::ResponseHelper
 
             # Fetches a client access token from the TikTok Open API.
             #

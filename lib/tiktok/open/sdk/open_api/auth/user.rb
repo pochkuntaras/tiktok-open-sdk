@@ -11,7 +11,8 @@ module Tiktok
           module User
             extend self
 
-            include Helpers
+            include ::Tiktok::Open::Sdk::Helpers::AuthHelper
+            include ::Tiktok::Open::Sdk::Helpers::ResponseHelper
 
             # Constructs the TikTok OAuth authorization URI.
             #

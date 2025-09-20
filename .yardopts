@@ -1,0 +1,12 @@
+--markup markdown
+--markup-provider redcarpet
+--output-dir doc/
+--no-private
+--protected
+--exclude spec/
+--exclude coverage/
+--exclude tmp/
+--exclude pkg/
+--exclude .github/
+--title "TikTok Open SDK Documentation"
+--main README.md

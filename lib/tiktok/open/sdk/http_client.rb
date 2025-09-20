@@ -13,8 +13,6 @@ module Tiktok
       module HttpClient
         extend self
 
-        include StringUtils
-
         # Supported HTTP methods.
         SUPPORTED_METHODS = %i[get post].freeze
 
@@ -51,6 +49,16 @@ module Tiktok
         # @return [Net::HTTPResponse] The HTTP response object.
         def post(url, params: {}, headers: {}, body: nil)
           request(:post, url, params: params, headers: headers, body: body)
+        end
+
+        # Performs a GET HTTP request.
+        #
+        # @param url [String] The request URL.
+        # @param params [Hash] Query parameters.
+        # @param headers [Hash] HTTP headers.
+        # @return [Net::HTTPResponse] The HTTP response object.
+        def get(url, params: {}, headers: {})
+          request(:get, url, params: params, headers: headers)
         end
 
         private

@@ -1,6 +1,6 @@
 # TikTok Open SDK
 
-[![Gem Version](https://img.shields.io/badge/gem-v0.2.0-blue.svg)](https://rubygems.org/gems/tiktok-open-sdk)
+[![Gem Version](https://img.shields.io/badge/gem-v0.3.0-blue.svg)](https://rubygems.org/gems/tiktok-open-sdk)
 [![Ruby Version](https://img.shields.io/badge/ruby-%3E%3D%203.0.0-red.svg)](https://www.ruby-lang.org/en/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE.txt)
 [![CI](https://github.com/pochkuntaras/tiktok-open-sdk/actions/workflows/main.yml/badge.svg)](https://github.com/pochkuntaras/tiktok-open-sdk/actions/workflows/main.yml)
@@ -12,6 +12,7 @@ A comprehensive Ruby SDK for integrating with TikTok Open API. This gem provides
 - **OAuth 2.0 Authentication** – Seamless OAuth flow for secure integration
 - **Client Authentication** – Server-to-server authentication with client credentials
 - **Token Management** – Easy access token exchange and refresh
+- **User API** – Convenient methods to access user information
 - **HTTP Client** – Built-in client for interacting with TikTok APIs
 
 ## Installation
@@ -54,6 +55,7 @@ Tiktok::Open::Sdk.configure do |config|
   config.user_auth.auth_url         = 'https://www.tiktok.com/v2/auth/authorize/'
   config.user_auth.token_url        = 'https://open.tiktokapis.com/v2/oauth/token/'
   config.user_auth.revoke_token_url = 'https://open.tiktokapis.com/v2/oauth/revoke/'
+  config.user_info_url              = 'https://open.tiktokapis.com/v2/user/info/'
 end
 ```
 
@@ -156,14 +158,54 @@ end
 
 **Note:** Client tokens are used for server-to-server authentication and have different scopes and permissions than user tokens.
 
+### Using the User API
+
+The SDK provides a convenient way to access user information:
+
+```ruby
+# Get user information
+response = Tiktok::Open::Sdk::OpenApi::User.get_user_info(
+  access_token: access_token,
+  fields: %w[open_id union_id avatar_url display_name]
+)
+
+if response[:success]
+  user_data = response[:response][:data][:user]
+  
+  puts "User ID: #{user_data[:open_id]}"
+  puts "Display Name: #{user_data[:display_name]}"
+else
+  puts "Error: #{response[:response][:error][:message]}"
+end
+```
+
+Available user fields include:
+- `open_id` - User's Open ID
+- `union_id` - User's Union ID
+- `avatar_url` - User's avatar URL
+- `display_name` - User's display name
+- `username` - User's username
+- And more (see documentation for full list)
+
 ### Using the HTTP Client
 
 The SDK includes a flexible HTTP client for making API calls:
 
 ```ruby
-# GET request
+# GET request using request method
 response = Tiktok::Open::Sdk::HttpClient.request(
   :get,
+  'https://open.tiktokapis.com/v2/user/info/',
+  params: {
+    fields: 'open_id,union_id,avatar_url'
+  },
+  headers: {
+    'Authorization' => "Bearer #{access_token}"
+  }
+)
+
+# GET request using get method
+response = Tiktok::Open::Sdk::HttpClient.get(
   'https://open.tiktokapis.com/v2/user/info/',
   params: {
     fields: 'open_id,union_id,avatar_url'
@@ -241,6 +283,18 @@ class TiktokAuthController < ApplicationController
       session[:tiktok_access_token]  = token_data[:access_token]
       session[:tiktok_refresh_token] = token_data[:refresh_token]
       
+      # Fetch user information
+      user_response = Tiktok::Open::Sdk::OpenApi::User.get_user_info(
+        access_token: token_data[:access_token],
+        fields: %w[open_id display_name avatar_url]
+      )
+      
+      if user_response[:success]
+        user_data = user_response[:response][:data][:user]
+        session[:tiktok_user_name] = user_data[:display_name]
+        session[:tiktok_avatar] = user_data[:avatar_url]
+      end
+      
       redirect_to dashboard_path, notice: 'Successfully connected to TikTok!'
     else
       redirect_to root_path, alert: 'Failed to authenticate with TikTok'
@@ -276,6 +330,7 @@ Tiktok::Open::Sdk.configure do |config|
   config.client_secret          = 'your_client_secret' # Required
   config.user_auth.scopes       = %w[user.info.basic]  # Optional
   config.user_auth.redirect_uri = 'https://...'        # Optional
+  config.user_info_url          = 'https://open.tiktokapis.com/v2/user/info/' # Optional
 end
 ```
 
@@ -341,6 +396,35 @@ Obtains a client access token for server-to-server authentication.
 }
 ```
 
+### User API
+
+#### `get_user_info(access_token:, fields:, validate: true)`
+
+Retrieves user information from the TikTok Open API.
+
+**Parameters:**
+- `access_token` (String, required) - OAuth2 access token for authentication
+- `fields` (Array<String>, required) - User fields to retrieve (must be valid fields)
+- `validate` (Boolean, optional) - Whether to validate the token and fields (default: true)
+
+**Returns:** Hash with `:success`, `:code`, and `:response` keys
+
+**Available Fields:**
+- `open_id` - The unique identification of the user in the current application.Open id for the client
+- `union_id` - The unique identification of the user across different apps for the same developer. For example, if a partner has X number of clients, it will get X number of open_id for the same TikTok user, but one persistent union_id for the particular user
+- `avatar_url` - User's profile image
+- `avatar_url_100` - User`s profile image in 100x100 size
+- `avatar_large_url` - User's profile image with higher resolution
+- `display_name` - User's profile name
+- `bio_description` - User's bio description if there is a valid one
+- `profile_deep_link` - The link to user's TikTok profile page
+- `is_verified` - Whether TikTok has provided a verified badge to the account after confirming that it belongs to the user it represents
+- `username` - User's username
+- `follower_count` - User's followers count
+- `following_count` - The number of accounts that the user is following
+- `likes_count` - The total number of likes received by the user across all of their videos
+- `video_count` - The total number of publicly posted videos by the user
+
 ### HTTP Client
 
 #### `request(method, url, params: {}, headers: {}, body: nil)`
@@ -353,6 +437,17 @@ Performs HTTP requests.
 - `params` (Hash, optional) - Query parameters
 - `headers` (Hash, optional) - HTTP headers
 - `body` (Hash, optional) - Request body
+
+**Returns:** `Net::HTTPResponse` object
+
+#### `get(url, params: {}, headers: {})`
+
+Convenience method for GET requests.
+
+**Parameters:**
+- `url` (String) - Request URL
+- `params` (Hash, optional) - Query parameters
+- `headers` (Hash, optional) - HTTP headers
 
 **Returns:** `Net::HTTPResponse` object
 
