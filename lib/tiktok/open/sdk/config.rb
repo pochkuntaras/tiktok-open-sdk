@@ -29,14 +29,24 @@ module Tiktok
         #   @return [String] TikTok user info endpoint URL.
         attr_accessor :user_info_url
 
+        # @!attribute [rw] creator_info_query_url
+        #   @return [String] TikTok Query Creator Info endpoint URL.
+        attr_accessor :creator_info_query_url
+
         # @!attribute [rw] user_auth
         #   @return [UserAuth] User authentication configuration.
         attr_accessor :user_auth
 
+        # @!attribute [rw] load_omniauth
+        #   @return [Boolean] Whether to automatically load OmniAuth strategy.
+        attr_accessor :load_omniauth
+
         # Create a new Config with default user authentication settings.
         def initialize
-          @user_info_url = "#{OPEN_API_BASE_URL}/v2/user/info/"
-          @user_auth     = UserAuth.new
+          @user_info_url          = "#{OPEN_API_BASE_URL}/v2/user/info/"
+          @creator_info_query_url = "#{OPEN_API_BASE_URL}/v2/post/publish/creator_info/query/"
+          @user_auth              = UserAuth.new
+          @load_omniauth          = false
         end
 
         # User authentication configuration for TikTok Open SDK.

@@ -1,6 +1,6 @@
 # TikTok Open SDK
 
-[![Gem Version](https://img.shields.io/badge/gem-v0.3.0-blue.svg)](https://rubygems.org/gems/tiktok-open-sdk)
+[![Gem Version](https://img.shields.io/badge/gem-v0.4.0-blue.svg)](https://rubygems.org/gems/tiktok-open-sdk)
 [![Ruby Version](https://img.shields.io/badge/ruby-%3E%3D%203.0.0-red.svg)](https://www.ruby-lang.org/en/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE.txt)
 [![CI](https://github.com/pochkuntaras/tiktok-open-sdk/actions/workflows/main.yml/badge.svg)](https://github.com/pochkuntaras/tiktok-open-sdk/actions/workflows/main.yml)
@@ -10,9 +10,11 @@ A comprehensive Ruby SDK for integrating with TikTok Open API. This gem provides
 ## Features
 
 - **OAuth 2.0 Authentication** – Seamless OAuth flow for secure integration
+- **OmniAuth Strategy** – Ready-to-use OmniAuth strategy for Rails applications
 - **Client Authentication** – Server-to-server authentication with client credentials
 - **Token Management** – Easy access token exchange and refresh
 - **User API** – Convenient methods to access user information
+- **Post API** – Methods for querying creator information and video publishing
 - **HTTP Client** – Built-in client for interacting with TikTok APIs
 
 ## Installation
@@ -56,6 +58,10 @@ Tiktok::Open::Sdk.configure do |config|
   config.user_auth.token_url        = 'https://open.tiktokapis.com/v2/oauth/token/'
   config.user_auth.revoke_token_url = 'https://open.tiktokapis.com/v2/oauth/revoke/'
   config.user_info_url              = 'https://open.tiktokapis.com/v2/user/info/'
+  config.creator_info_query_url     = 'https://open.tiktokapis.com/v2/post/publish/creator_info/query/'
+
+  # Optional: Enable OmniAuth strategy auto-loading
+  config.load_omniauth = true
 end
 ```
 
@@ -158,13 +164,37 @@ end
 
 **Note:** Client tokens are used for server-to-server authentication and have different scopes and permissions than user tokens.
 
+### Using the Post API
+
+The SDK provides convenient methods for interacting with TikTok's Post API:
+
+#### Creator Info Query
+
+Query creator information for video publishing:
+
+```ruby
+# Get creator information
+response = Tiktok::Open::Sdk.post.creator_info_query(access_token: access_token)
+
+if response[:success]
+  creator_data = response[:response][:data]
+
+  puts "Creator Avatar: #{creator_data[:creator_avatar_url]}"
+  puts "Creator Nickname: #{creator_data[:creator_nickname]}"
+  puts "Max Video Duration: #{creator_data[:max_video_post_duration_sec]} seconds"
+  puts "Privacy Options: #{creator_data[:privacy_level_options]}"
+else
+  puts "Error: #{response[:response][:error][:message]}"
+end
+```
+
 ### Using the User API
 
 The SDK provides a convenient way to access user information:
 
 ```ruby
 # Get user information
-response = Tiktok::Open::Sdk::OpenApi::User.get_user_info(
+response = Tiktok::Open::Sdk.user.get_user_info(
   access_token: access_token,
   fields: %w[open_id union_id avatar_url display_name]
 )
@@ -186,6 +216,73 @@ Available user fields include:
 - `display_name` - User's display name
 - `username` - User's username
 - And more (see documentation for full list)
+
+### Using OmniAuth Strategy
+
+The SDK provides a ready-to-use OmniAuth strategy for Rails applications:
+
+#### Rails Setup
+
+Add the OmniAuth strategy to your Rails application:
+
+```ruby
+# config/initializers/devise.rb
+Devise.setup do |config|
+  config.omniauth(
+    :tiktok_open_sdk,
+    Rails.application.credentials.dig(:tiktok, :client_key),
+    Rails.application.credentials.dig(:tiktok, :client_secret),
+    scope:         'user.info.basic,user.info.profile,user.info.stats',
+  )
+end
+```
+
+Or use the SDK configuration:
+
+```ruby
+# config/initializers/tiktok_sdk.rb
+Tiktok::Open::Sdk.configure do |config|
+  config.client_key             = Rails.application.credentials.dig(:tiktok, :client_key)
+  config.client_secret          = Rails.application.credentials.dig(:tiktok, :client_secret)
+  config.user_auth.scopes       = %w[user.info.basic video.publish]
+  config.user_auth.redirect_uri = "#{Rails.application.config.action_mailer.asset_host.chomp('/')}/users/auth/tiktok_open_sdk/callback"
+  config.load_omniauth          = true
+end
+```
+
+#### OmniAuth Callback
+
+Handle the OmniAuth callback in your controller:
+
+```ruby
+# app/controllers/omniauth_callbacks_controller.rb
+class OmniauthCallbacksController < Devise::OmniauthCallbacksController
+  def tiktok_open_sdk
+    @auth = request.env['omniauth.auth']
+
+    # Find or create user based on TikTok auth data
+    @user = User.find_for_oauth(@auth)
+
+    # ...
+
+    if @user.persisted?
+      sign_in_and_redirect @user, event: :authentication
+      set_flash_message :notice, :success, kind: 'TikTok'
+    else
+      session['devise.provider_data'] = @auth.except('extra')
+      redirect_to new_user_registration_url
+    end
+  end
+end
+```
+
+#### Supported Scopes
+
+The OmniAuth strategy supports the following TikTok scopes:
+
+- `user.info.basic` - Basic user info: open_id, union_id, display_name, avatar URLs
+- `user.info.profile` - Profile info: username, bio_description, profile_deep_link, is_verified
+- `user.info.stats` - Statistics: follower_count, following_count, likes_count, video_count
 
 ### Using the HTTP Client
 
@@ -410,20 +507,41 @@ Retrieves user information from the TikTok Open API.
 **Returns:** Hash with `:success`, `:code`, and `:response` keys
 
 **Available Fields:**
-- `open_id` - The unique identification of the user in the current application.Open id for the client
-- `union_id` - The unique identification of the user across different apps for the same developer. For example, if a partner has X number of clients, it will get X number of open_id for the same TikTok user, but one persistent union_id for the particular user
-- `avatar_url` - User's profile image
-- `avatar_url_100` - User`s profile image in 100x100 size
-- `avatar_large_url` - User's profile image with higher resolution
-- `display_name` - User's profile name
-- `bio_description` - User's bio description if there is a valid one
-- `profile_deep_link` - The link to user's TikTok profile page
-- `is_verified` - Whether TikTok has provided a verified badge to the account after confirming that it belongs to the user it represents
-- `username` - User's username
-- `follower_count` - User's followers count
-- `following_count` - The number of accounts that the user is following
-- `likes_count` - The total number of likes received by the user across all of their videos
-- `video_count` - The total number of publicly posted videos by the user
+- `open_id` - Unique identifier for the user within the current application
+- `union_id` - Persistent identifier for the user across different applications from the same developer
+- `avatar_url` - URL to the user's profile image
+- `avatar_url_100` - URL to the user's profile image in 100x100 pixel size
+- `avatar_large_url` - URL to the user's profile image in higher resolution
+- `display_name` - User's display name shown on their TikTok profile
+- `bio_description` - User's biography text (if available)
+- `profile_deep_link` - Direct link to the user's TikTok profile page
+- `is_verified` - Boolean indicating if the account is verified by TikTok
+- `username` - User's unique TikTok username
+- `follower_count` - Number of followers the user has
+- `following_count` - Number of accounts the user is following
+- `likes_count` - Total number of likes received across all user's videos
+- `video_count` - Total number of publicly posted videos by the user
+
+### Post API
+
+#### `creator_info_query(access_token:)`
+
+Queries creator information from the TikTok Open API for video publishing.
+
+**Parameters:**
+- `access_token` (String, required) - OAuth2 access token for authentication
+
+**Returns:** Hash with `:success`, `:code`, and `:response` keys
+
+**Response Data:**
+- `creator_avatar_url` - Creator's avatar URL
+- `creator_nickname` - Creator's display name
+- `creator_username` - Creator's username
+- `stitch_disabled` - Whether stitch is disabled for the creator
+- `comment_disabled` - Whether comments are disabled for the creator
+- `duet_disabled` - Whether duet is disabled for the creator
+- `max_video_post_duration_sec` - Maximum video duration in seconds
+- `privacy_level_options` - Available privacy level options
 
 ### HTTP Client
 

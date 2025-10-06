@@ -23,7 +23,7 @@ module Tiktok
             # @return [URI] The constructed authorization URI.
             def authorization_uri(params = {})
               allowed_params = params.slice(:scope, :redirect_uri, :state)
-              uri            = URI(Tiktok::Open::Sdk.config.user_auth.auth_url)
+              uri            = URI.parse(Tiktok::Open::Sdk.config.user_auth.auth_url)
               query_params   = authorization_uri_default_params.merge(allowed_params)
               uri.query      = URI.encode_www_form(query_params)
 

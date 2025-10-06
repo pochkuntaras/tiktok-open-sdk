@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
-require 'securerandom'
-
 RSpec.describe Tiktok::Open::Sdk do
-  it { expect(described_class::VERSION).to be('0.3.0') }
+  it { expect(described_class::VERSION).to be('0.4.0') }
 
   it { described_class.config { |c| expect(c).to eq(described_class) } }
 
@@ -54,5 +52,9 @@ RSpec.describe Tiktok::Open::Sdk do
         expect(described_class::OpenApi::Auth::User.authorization_uri).to eq(uri)
       end
     end
+  end
+
+  describe '.post' do
+    it { expect(described_class.post).to eq(Tiktok::Open::Sdk::OpenApi::Post::Publish) }
   end
 end

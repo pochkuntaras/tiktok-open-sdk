@@ -85,7 +85,7 @@ module Tiktok
           case content_type
           when 'application/x-www-form-urlencoded'
             request.set_form_data(body)
-          when 'application/json'
+          when 'application/json', 'application/json; charset=UTF-8'
             request.body = body.to_json
           else
             raise ArgumentError, "Unsupported content type: #{content_type}"

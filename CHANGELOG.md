@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-10-06
+### Added
+- **OmniAuth Strategy** - Ready-to-use OmniAuth strategy for TikTok Open Platform integration in Rails applications
+  - Supports multiple TikTok OAuth scopes (user.info.basic, user.info.profile, user.info.stats)
+  - Automatic token handling and user info retrieval
+  - Rails/Devise integration examples and callbacks
+- **Post API** - New module for interacting with TikTok's Post API endpoints
+  - Creator info query functionality for video publishing workflows
+  - Support for querying creator settings and capabilities
+
 ## [0.3.0] - 2025-09-20
 ### Added
 - User information retrieval from TikTok API

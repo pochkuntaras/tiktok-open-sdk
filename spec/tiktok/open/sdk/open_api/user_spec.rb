@@ -1,11 +1,8 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-require 'webmock/rspec'
-
 RSpec.describe Tiktok::Open::Sdk::OpenApi::User do
-  let(:client_key)    { 'dummy_client_key' }
-  let(:client_secret) { 'dummy_client_secret' }
+  let(:client_key)    { 'test_client_key' }
+  let(:client_secret) { 'test_client_key' }
   let(:access_token)  { 'valid_access_token_12345' }
   let(:fields)        { %w[open_id union_id avatar_url] }
   let(:user_info_url) { 'https://open.tiktokapis.com/v2/user/info/' }
@@ -208,7 +205,6 @@ RSpec.describe Tiktok::Open::Sdk::OpenApi::User do
         ]
       end
 
-      # rubocop:disable Naming/VariableNumber
       let(:response) do
         {
           data:  {
@@ -236,7 +232,6 @@ RSpec.describe Tiktok::Open::Sdk::OpenApi::User do
           }
         }.to_json
       end
-      # rubocop:enable Naming/VariableNumber
 
       before do
         stub_request(:get, user_info_url)

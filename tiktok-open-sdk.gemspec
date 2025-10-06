@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   spec.metadata['allowed_push_host'] = 'https://rubygems.org'
 
   spec.metadata['homepage_uri']          = spec.homepage
-  spec.metadata['source_code_uri']       = 'https://github.com/pochkuntaras/tiktok-open-sdk'
+  spec.metadata['source_code_uri']       = "#{spec.homepage}.git"
   spec.metadata['changelog_uri']         = 'https://github.com/pochkuntaras/tiktok-open-sdk/blob/main/CHANGELOG.md'
   spec.metadata['rubygems_mfa_required'] = 'true'
   spec.metadata['documentation_uri']     = 'https://rubydoc.info/gems/tiktok-open-sdk'

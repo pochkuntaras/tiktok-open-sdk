@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'net/http'
-require 'webmock/rspec'
-
 RSpec.describe Tiktok::Open::Sdk::HttpClient do
   let(:test_url)      { 'https://api.tiktok.com/test' }
   let(:http_response) { instance_double(Net::HTTPResponse, code: '200', body: '{"success": true}') }

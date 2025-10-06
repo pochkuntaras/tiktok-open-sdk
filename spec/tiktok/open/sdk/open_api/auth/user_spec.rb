@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'webmock/rspec'
-
 RSpec.describe Tiktok::Open::Sdk::OpenApi::Auth::User do
   let(:client_key)         { 'test_client_key_123' }
   let(:client_secret)      { 'test_client_secret_456' }

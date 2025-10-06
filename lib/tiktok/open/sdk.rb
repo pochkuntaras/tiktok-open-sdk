@@ -6,6 +6,7 @@ require_relative 'sdk/helpers/auth_helper'
 require_relative 'sdk/helpers/validators/token_validator'
 require_relative 'sdk/open_api/auth/user'
 require_relative 'sdk/open_api/auth/client'
+require_relative 'sdk/open_api/post/publish'
 require_relative 'sdk/open_api/user'
 require_relative 'sdk/version'
 require_relative 'sdk/http_client'
@@ -45,11 +46,14 @@ module Tiktok
         #     config.user_auth.token_url = 'https://open.tiktokapis.com/v2/oauth/token/'
         #     config.user_auth.scopes = %w[user.info.basic video.list]
         #     config.user_auth.redirect_uri = 'https://your-redirect-uri.example.com'
+        #     config.load_omniauth = true
         #   end
         def configure
           self.config ||= Config.new
 
           yield(config)
+
+          load_omniauth! if config.load_omniauth
 
           config
         end
@@ -72,6 +76,44 @@ module Tiktok
         #   Tiktok::Open::Sdk.client_auth.fetch_client_token
         def client_auth
           OpenApi::Auth::Client
+        end
+
+        # Convenience accessor for post publish functionality
+        #
+        # @return [OpenApi::Post::Publish] the Post publish module
+        #
+        # @example
+        #   Tiktok::Open::Sdk.post.video_init(access_token: 'token', post_info: post_info, source_info: source_info)
+        def post
+          OpenApi::Post::Publish
+        end
+
+        # Convenience accessor for user functionality
+        #
+        # @return [OpenApi::User] the User module
+        #
+        # @example
+        #   Tiktok::Open::Sdk.user.info(access_token: 'token')
+        def user
+          OpenApi::User
+        end
+
+        private
+
+        # Loads the OmniAuth strategy for TikTok Open Platform.
+        #
+        # Attempts to require the necessary OmniAuth dependencies for TikTok Open integration.
+        # Raises an error if the required gems are not available.
+        #
+        # @raise [Tiktok::Open::Sdk::Error] if 'omniauth-oauth2' or the TikTok strategy cannot be loaded
+        # @example
+        #   Tiktok::Open::Sdk.load_omniauth!
+        def load_omniauth!
+          require 'omniauth-oauth2'
+          require 'tiktok/open/omniauth/strategies/tiktok_open_sdk'
+        rescue LoadError => e
+          raise ::Tiktok::Open::Sdk::Error,
+                "OmniAuth is not loaded! Error: #{e.message}"
         end
       end
     end

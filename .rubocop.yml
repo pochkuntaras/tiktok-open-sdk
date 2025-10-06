@@ -7,6 +7,9 @@ AllCops:
   NewCops: enable
   SuggestExtensions: false
 
+Naming/VariableNumber:
+  EnforcedStyle: snake_case
+
 Metrics/MethodLength:
   Max: 15
 
