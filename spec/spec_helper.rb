@@ -13,6 +13,8 @@ require 'omniauth'
 require 'omniauth-oauth2'
 require 'tiktok/open/sdk'
 
+Dir[File.join(__dir__, 'support', '**', '*.rb')].each { |f| require f }
+
 Tiktok::Open::Sdk.configure do |config|
   config.client_key             = 'test_client_key'
   config.client_secret          = 'test_client_secret'

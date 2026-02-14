@@ -102,10 +102,11 @@ module Tiktok
         # @param body [Hash, nil] The request body.
         # @return [Net::HTTPRequest] The HTTP request object.
         def build_http_request(method, uri, headers, body)
-          klass   = Net::HTTP.const_get(method.capitalize)
-          request = klass.new(uri, headers)
+          klass        = Net::HTTP.const_get(method.capitalize)
+          request      = klass.new(uri, headers)
+          content_type = headers[:'Content-Type'] || headers['Content-Type']
 
-          body ? assign_body!(request, body, headers[:'Content-Type']) : request
+          body ? assign_body!(request, body, content_type) : request
         end
       end
     end

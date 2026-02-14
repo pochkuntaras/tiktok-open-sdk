@@ -33,6 +33,10 @@ module Tiktok
         #   @return [String] TikTok Query Creator Info endpoint URL.
         attr_accessor :creator_info_query_url
 
+        # @!attribute [rw] video_init_url
+        #   @return [String] TikTok Video Init endpoint URL.
+        attr_accessor :video_init_url
+
         # @!attribute [rw] user_auth
         #   @return [UserAuth] User authentication configuration.
         attr_accessor :user_auth
@@ -45,6 +49,7 @@ module Tiktok
         def initialize
           @user_info_url          = "#{OPEN_API_BASE_URL}/v2/user/info/"
           @creator_info_query_url = "#{OPEN_API_BASE_URL}/v2/post/publish/creator_info/query/"
+          @video_init_url         = "#{OPEN_API_BASE_URL}/v2/post/publish/video/init/"
           @user_auth              = UserAuth.new
           @load_omniauth          = false
         end

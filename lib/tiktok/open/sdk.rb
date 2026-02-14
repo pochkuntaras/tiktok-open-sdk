@@ -4,6 +4,7 @@ require_relative 'sdk/helpers/string_utils_helper'
 require_relative 'sdk/helpers/response_helper'
 require_relative 'sdk/helpers/auth_helper'
 require_relative 'sdk/helpers/validators/token_validator'
+require_relative 'sdk/helpers/validators/post_publish_validator'
 require_relative 'sdk/open_api/auth/user'
 require_relative 'sdk/open_api/auth/client'
 require_relative 'sdk/open_api/post/publish'
@@ -22,7 +23,31 @@ module Tiktok
       #   raise Tiktok::Open::Sdk::Error, "Something went wrong"
       class Error < StandardError; end
 
-      class RequestValidationError < Error; end
+      # Error class for request validation failures
+      #
+      # This error is raised when request validation fails, providing access to
+      # detailed validation error information.
+      #
+      # @attr_reader messages [Hash, nil] validation errors hash or nil if no specific errors
+      #
+      # @example
+      #   raise RequestValidationError.new({ field: ['error message'] })
+      #   raise RequestValidationError.new('General validation error')
+      class RequestValidationError < Error
+        attr_reader :messages
+
+        def initialize(messages = nil)
+          if messages.is_a?(Hash)
+            @messages = messages
+
+            super('Validation failed')
+          else
+            @messages = nil
+
+            super
+          end
+        end
+      end
 
       class << self
         # SDK configuration object

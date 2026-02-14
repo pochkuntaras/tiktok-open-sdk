@@ -4,6 +4,8 @@ source 'https://rubygems.org'
 
 gemspec
 
+gem 'public_suffix', '>= 2.0.2', '< 6.0'
+
 group :development do
   gem 'bundle-audit', '~> 0.1'
   gem 'erb', '~> 4.0'

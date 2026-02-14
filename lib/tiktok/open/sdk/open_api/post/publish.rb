@@ -12,6 +12,7 @@ module Tiktok
 
             include ::Tiktok::Open::Sdk::Helpers::ResponseHelper
             include ::Tiktok::Open::Sdk::Helpers::Validators::TokenValidator
+            include ::Tiktok::Open::Sdk::Helpers::Validators::PostPublishValidator
 
             # Queries creator information from the TikTok Open API.
             #
@@ -29,6 +30,20 @@ module Tiktok
                 headers: {
                   Authorization: "Bearer #{access_token}"
                 }
+              )
+            end
+
+            def video_init(access_token:, params: {})
+              validate_token!(access_token)
+              validate_video_init_info!(params)
+
+              render_response Tiktok::Open::Sdk::HttpClient.post(
+                Tiktok::Open::Sdk.config.video_init_url,
+                headers: {
+                  Authorization:  "Bearer #{access_token}",
+                  'Content-Type': 'application/json; charset=UTF-8'
+                },
+                body:    params
               )
             end
           end

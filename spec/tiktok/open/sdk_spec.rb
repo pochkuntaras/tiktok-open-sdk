@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe Tiktok::Open::Sdk do
-  it { expect(described_class::VERSION).to be('0.4.0') }
+  it { expect(described_class::VERSION).to be('0.5.0') }
 
   it { described_class.config { |c| expect(c).to eq(described_class) } }
 

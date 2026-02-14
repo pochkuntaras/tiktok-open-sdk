@@ -1,6 +1,6 @@
 # TikTok Open SDK
 
-[![Gem Version](https://img.shields.io/badge/gem-v0.4.0-blue.svg)](https://rubygems.org/gems/tiktok-open-sdk)
+[![Gem Version](https://img.shields.io/badge/gem-v0.5.0-blue.svg)](https://rubygems.org/gems/tiktok-open-sdk)
 [![Ruby Version](https://img.shields.io/badge/ruby-%3E%3D%203.0.0-red.svg)](https://www.ruby-lang.org/en/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE.txt)
 [![CI](https://github.com/pochkuntaras/tiktok-open-sdk/actions/workflows/main.yml/badge.svg)](https://github.com/pochkuntaras/tiktok-open-sdk/actions/workflows/main.yml)
@@ -59,6 +59,7 @@ Tiktok::Open::Sdk.configure do |config|
   config.user_auth.revoke_token_url = 'https://open.tiktokapis.com/v2/oauth/revoke/'
   config.user_info_url              = 'https://open.tiktokapis.com/v2/user/info/'
   config.creator_info_query_url     = 'https://open.tiktokapis.com/v2/post/publish/creator_info/query/'
+  config.video_init_url             = 'https://open.tiktokapis.com/v2/post/publish/video/init/'
 
   # Optional: Enable OmniAuth strategy auto-loading
   config.load_omniauth = true
@@ -183,6 +184,40 @@ if response[:success]
   puts "Creator Nickname: #{creator_data[:creator_nickname]}"
   puts "Max Video Duration: #{creator_data[:max_video_post_duration_sec]} seconds"
   puts "Privacy Options: #{creator_data[:privacy_level_options]}"
+else
+  puts "Error: #{response[:response][:error][:message]}"
+end
+```
+
+#### Video Init
+
+Initialize a video publish to obtain an upload URL (for file upload) or to start a pull-from-URL flow:
+
+```ruby
+params = {
+  post_info: {
+    title:                    'My video #tiktok',
+    privacy_level:            'SELF_ONLY',
+    disable_duet:             false,
+    disable_comment:          false,
+    disable_stitch:           false,
+    video_cover_timestamp_ms: 1000
+  },
+  source_info: {
+    source:            'FILE_UPLOAD',
+    video_type:        'video/mp4',
+    video_size:        7_340_032,
+    chunk_size:        7_340_032,
+    total_chunk_count: 1
+  }
+}
+
+response = Tiktok::Open::Sdk.post.video_init(access_token: access_token, params: params)
+
+if response[:success]
+  publish_id = response[:response][:data][:publish_id]
+  upload_url = response[:response][:data][:upload_url]
+  # Use upload_url to upload video chunks (FILE_UPLOAD) or proceed with PULL_FROM_URL flow
 else
   puts "Error: #{response[:response][:error][:message]}"
 end
@@ -428,6 +463,8 @@ Tiktok::Open::Sdk.configure do |config|
   config.user_auth.scopes       = %w[user.info.basic]  # Optional
   config.user_auth.redirect_uri = 'https://...'        # Optional
   config.user_info_url          = 'https://open.tiktokapis.com/v2/user/info/' # Optional
+  config.creator_info_query_url = 'https://open.tiktokapis.com/v2/post/publish/creator_info/query/' # Optional
+  config.video_init_url         = 'https://open.tiktokapis.com/v2/post/publish/video/init/' # Optional
 end
 ```
 
@@ -542,6 +579,24 @@ Queries creator information from the TikTok Open API for video publishing.
 - `duet_disabled` - Whether duet is disabled for the creator
 - `max_video_post_duration_sec` - Maximum video duration in seconds
 - `privacy_level_options` - Available privacy level options
+
+#### `video_init(access_token:, params: {})`
+
+Initializes a video publish and returns a publish ID and upload URL (for file upload) or starts a pull-from-URL flow.
+
+**Parameters:**
+- `access_token` (String, required) - OAuth2 access token for authentication
+- `params` (Hash, required) - Request body with `post_info` and `source_info`
+  - `post_info` - Post metadata (title, privacy_level, disable_duet, disable_comment, disable_stitch, video_cover_timestamp_ms, etc.)
+  - `source_info` - Video source (e.g. `source: 'FILE_UPLOAD'` with video_size, chunk_size, total_chunk_count, video_type; or `source: 'PULL_FROM_URL'` with video_url)
+
+**Returns:** Hash with `:success`, `:code`, and `:response` keys
+
+**Response Data (on success):**
+- `data.publish_id` - Publish session ID
+- `data.upload_url` - URL for uploading video chunks (when using FILE_UPLOAD)
+
+**Raises:** `Tiktok::Open::Sdk::RequestValidationError` if access token is invalid or params fail validation
 
 ### HTTP Client
 
